@@ -1,0 +1,16 @@
+upload level02.pcap in the pc -> scp -P <port> level02@localhost:level02.pcap level02.pcap
+download wireshark in toolbox (this is a pcap reader) -> sudo dnf install wireshark
+use wireshark with the file -> wireshark level02.pcap
+
+it is gonna show all the detail of all the packets exchanged between the two adresses,
+we can see the full discussion if we right-click on any packet and click on follow stream
+
+we can see written "password:" with as reply : "ft_wandr...NDRel.L0L."
+but when we try to log with this in su flag02 the mdp doesn't work
+
+If we change the format ASCII to hex-dump in "show as" we can see that each byte
+is represented in his hexadecimal notation and ascii notation.
+
+By that, we can observe that the dots hex notation in the password are 7f wich correspond to the DEL key, and the last dot is '\r' carriage return (entry key)
+so with this information we can now compose the final password : ft_waNDReL0L
+which will successfully logs in "su flag02"
