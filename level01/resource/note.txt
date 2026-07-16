@@ -1,0 +1,5 @@
+use grep -rnw '/etc' -e 'flag01'
+
+find the coded pass and use john the riper on it (toolbox)
+
+result in 'abcdefg'
