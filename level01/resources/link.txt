@@ -1,3 +1,0 @@
-https://stackoverflow.com/questions/16956810/find-all-files-containing-a-specific-text-string-on-linux
-
-https://github.com/openwall/john
