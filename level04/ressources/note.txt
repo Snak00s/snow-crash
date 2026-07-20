@@ -1,0 +1,17 @@
+When we arrives on this level, we can see that we have a file "level04.pl" at our disposition,
+it is a perl file that is executed as a cgi, in the file the port 4747 is written as a commentary.
+This should means that a server is running on this port.
+
+When we look more closely in the file, we can see that the code describe a recuperation of information in the var "x",
+which is sent when we call the cgi with either GET or POST, and print it by calling the echo command.
+
+Again there is a vulnerability in this code because we can simplely put something like $(ls) to execute a command instead of just printing the value whith echo.
+
+So we can try with curl first with this command : curl -X GET localhost:4747/level04.pl?x="$(ls)" which will list the current directory.
+Maybe we can do the same thing with the getflag command then ? sadly no because when you try : curl -X GET localhost:4747/level04.pl?x="$(getflag > /tmp/out)",
+there is no result because the command is executed as level04.
+
+So what is the solution then ? Well you have to send this line: http://localhost:4747/level04.pl?x="$(getflag)" in a web browser.
+For that we need to add new a port forwarding 4747 -> 4747 and then try to see if it works and it works !
+
+that works because we are not log in the vm as level04 so it execute the command getflag as flag04 !
