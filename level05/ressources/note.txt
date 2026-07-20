@@ -1,0 +1,58 @@
+As we connect to the level05 user, we receive a notification that a mail as been received. So we can check in /var/mail/ and see that a file named level05 exist.
+The file contain a single line :
+
+#####
+*/2 * * * * su -c "sh /usr/sbin/openarenaserver" - flag05
+#####
+
+We can recognize a patern that is specific to crontab : */2 * * * *, it's a known program to execute a specific command periodicaly, we used it long time before in Born2beRoot.
+We type 'crontab -e' to enter the task list file named 'crontab', we just copy the /var/mail/level05 content at the end of crontab.
+
+As we exit the crontab file, it will run every 2min (see crontab -e commented content) :
+
+#####
+su -c "sh /usr/sbin/openarenaserver"
+#####
+
+Know let see what the program named openarenaserver does.
+If we do 'cat /usr/sbin/openarenaserver', we obtain this result :
+
+#####
+#!/bin/sh
+
+for i in /opt/openarenaserver/* ; do
+	(ulimit -t 5; bash -x "$i")
+	rm -f "$i"
+done
+#####
+
+also if we check the owner with 'ls -l /usr/sbin/openarenaserver' :
+
+#####
+-rwxr-x---+ 1 flag05 flag05 94 Mar  5  2016 /usr/sbin/openarenaserver
+#####
+
+We can see that the program is owned by flag05, so it means that the crontab execution of it will potentially be made by flag05 !
+
+We can see multiple thing in this program, firstly, there is a directory called /openarenaserver in /opt, also the program should execute 3 commands when called (so every 2min):
+	-ulimit -t 5: should change the cpu time to 5sec (not important in our case)
+	-bash -x "$i": should open a bash and execute the command inside "$i"
+	-rm -f "$i": should remove the file "$i"
+
+It means that every 2min, openarenaserver will be executed, it will execute every commands in all file in /opt/openarenaserver/ in a new terminal and then force remove all files.
+The thing to understand is because every command are executed inside a new bash, we will not see any of it, so the first idea is really simple :
+let's create a 'script.sh' file that will execute getflag and put the result in /tmp/flag.
+
+#####
+#!/bin/bash
+
+getflag > /tmp/flag
+#####
+
+As we do, we wait a little and check whenever 'script.sh' will be removed, and as it happend, we check the content of /tmp/flag and :
+
+#####
+Check flag.Here is your token : viuaaale9huek52boumoomioc
+#####
+
+Then we can login to level06 with this password
