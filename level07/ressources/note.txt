@@ -1,0 +1,26 @@
+For this level, we only have a binary file to our disposition, so we decompile it and here what's inside:
+
+int32_t main(int argc, char** argv, char** envp)
+{
+    gid_t eax = getegid();
+    uid_t eax_1 = geteuid();
+    setresgid(eax, eax, eax);
+    setresuid(eax_1, eax_1, eax_1);
+    char* var_1c = nullptr;
+    asprintf(&var_1c, "/bin/echo %s ", getenv("LOGNAME"));
+    return system(var_1c);
+}
+
+We can see an privilege upgrade to flag07 and that the program stores in a variable "/bin/echo" following the content of the environnement variable LOGNAME,
+and execute the string with the system call (it will simply echo the LOGNAME variable)
+
+So we can directly see here that the vulnerability is the env var LOGNAME because we can simply set it as whatever we want.
+The first we can do is to fill the LOGNAME var with the command getflag with export: export LOGNAME=$(getflag).
+But when we type the command "env" to see if it worked, we can observe that the content of LOGNAME is "Check flag.Here is your token : Nope there is no token here for you sorry. Try again :)"
+It is because the $() notation will first execute the command and take the output to export.
+
+So to bypass that we will have to make a file in tmp and simply put inside the command we want the binary to execute: "$(getflag)"
+and the we put it in the environnement variable LOGNAME using the cat command: "export LOGNAME=$(cat /tmp/file)"
+and it will successfully put in the LOGNAME variable our command
+
+Lastly we simply have to execute the binary to get the flag and go in the next level !
