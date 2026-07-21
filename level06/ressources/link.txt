@@ -1,0 +1,3 @@
+https://dogbolt.org/
+https://wiki.php.net/rfc/remove_preg_replace_eval_modifier
+https://security.stackexchange.com/questions/151142/understanding-preg-replace-filtering-exploitation

