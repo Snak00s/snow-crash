@@ -1,0 +1,78 @@
+This level contain 1 program named level09 and 1 file named token :
+"""
+level09@SnowCrash:~$ ls -l
+total 12
+-rwsr-sr-x 1 flag09 level09 7640 Mar  5  2016 level09
+----r--r-- 1 flag09 level09   26 Mar  5  2016 token
+"""
+As we are able to read token, inside there is a single line of random char.
+
+When we try to execute the the program with 'token' as parameter :
+"""
+level09@SnowCrash:~$ ./level09 token
+tpmhr
+"""
+
+The result is quite random at first glance but anyway let's see what the program do with a decompiler.
+Inside of it therre is a lot of non important information and check that does not have any type of vulnerabilities,
+there is no privilege command, no system() call, nothing like that.
+
+But Binnary ninja show us this :
+"""
+while (true)
+{
+	var_120 += 1;
+	int32_t i = 0xffffffff;
+	int32_t edi_1 = argv[1];
+	
+	while (i)
+	{
+		bool cond:0_1 = 0 != *edi_1;
+		edi_1 += 1;
+		i -= 1;
+		
+		if (!cond:0_1)
+			break;
+	}
+	
+	if (var_120 >= ~i - 1)
+		break;
+	
+	putchar(*(var_120 + argv[1]) + var_120);
+}
+"""
+
+The interesting part is :
+putchar(*(var_120 + argv[1]) + var_120);
+
+seems that the program print every char of argv[1] with the offset of their index,
+To explain more let's call argv[1] str :
+
+The program print :
+str[0] + 0
+str[1] + 1
+str[2] + 2
+...
+
+Really simple.
+
+And as we check with tpmhr :
+str[0] = t - 0 = t
+str[1] = p - 1 = o
+str[2] = m - 2 = k
+str[3] = h - 3 = e
+str[4] = r - 4 = n
+
+We retreive the name of the file : 'token' !
+So we know that what's in use is the argv[1] given and not the file or content of the file, it's just a regular string for the program.
+
+If we consider that 'token' and 'level09' are linked in a way or an other, let's try to do a reverse level09 program :
+(see main.c)
+
+And as we compile and try it on the content of token :
+"""
+level09@SnowCrash:/tmp$ ./a.out $(cat ~/token)
+f3iji1ju5yuevaus41q1afiuq
+"""
+
+There it is, the password of flag09 !
