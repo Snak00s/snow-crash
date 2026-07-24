@@ -1,0 +1,27 @@
+-----------------------------------------
+
+use grep -rnw '/etc' -e 'flag01' to find any file that containt 'flag01'
+
+we find a line in /etc/passwd which contain flag01 : flag01:42hDRfypTqqnw:3001:3001::/home/flag/flag01:/bin/bash
+
+we can guess that '42hDRfypTqqnw' is looking like a password
+
+try 'su flag01' with this password but dont work
+
+-----------------------------------------
+
+first idea is that the password is encoded
+
+by seeing the intra 'snow-crash' video, there is a password breaker that is named john the riper, so let's try this
+
+we go inside a toolbox and install john the riper on it (toolbox) (sudo dnf install john)
+
+we put '42hDRfypTqqnw' in a file file (echo "42hDRfypTqqnw" > pass.txt)
+
+then : john --show 'pass.txt'
+
+the cmd show 'abcdefg' as a possible decode of '42hDRfypTqqnw'
+
+-----------------------------------------
+
+we try again 'su flag01' with 'abcdefg' we succesfully login as flag01
