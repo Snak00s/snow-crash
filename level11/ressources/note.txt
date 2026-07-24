@@ -1,0 +1,12 @@
+When we arrive at this level, we found the file level11.lua, when looking at his information, we see that its global id is flag11 and user id is level11 os we can execute the file.
+By looking inside the file, we can observe that this code opens a server on the port 5151 with 127.0.0.1 as host.
+then it waits for a client connexion and if a client is conneted, it asks for a password that will be hashed and compared to print an output.
+The important thing here is not to actually find th epassword bu it's in the hash funtion, we can see that it takes the password entered and the echo it in a pipe,
+in order to sha1sum it and get the hashed password.
+The vulnerability here is again a command injection in the echo to do something like $(getflag > /tmp/res).
+
+So we try to execute the file in order to launch the server bu it print an error saying the port is already in use.
+by looking at all the open ports with the command "netstat -nltu" we can saw that the port is already open with the host 127.0.0.1.
+
+Just by curiosity, lets connect to this port with the command nc 127.0.0.1 5151 andd then it is asked to enter a password.... just like the lua script
+so we can try sending our injection, we type "$(getflag > /tmp/res)" and then when we print the /tmp/res file it gives us the password to the next level !
